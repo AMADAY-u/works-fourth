@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Basic template</title>
+    <style>body{padding:0;margin:0;background:#333;}h1{padding:0;margin:0;font-size:100%;color:white;}.mouse{font-size:50%;background: white;}</style>
+</head>
+<body>
+
+
+<!-- MAP[START] -->
+<h1>Animal Hospital maps : Select Maps Type
+  <select id="type">
+      <option value="road" selected>road</option>
+      <option value="aerial">aerial</option>
+      <option value="canvasDark">canvasDark</option>
+      <option value="canvasLight">canvasLight</option>
+      <option value="birdseye">birdseye</option>
+      <option value="grayscale">grayscale</option>
+      <option value="streetside">streetside</option>
+  </select>
+</h1>
+
+
+
+<div id="myMap" style='position:relative;width:100%;height:400px;'></div>
+
+<div id = content></div>
+<!-- MAP[END] -->
+
+<!-- jQuery&GoogleMapsAPI -->
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<!-- /jQuery&GoogleMapsAPI -->
+
+<!-- [ MapTypeId ] https://msdn.microsoft.com/en-us/library/mt712700.aspx -->
+<script type='text/javascript' src='https://www.bing.com/api/maps/mapcontrol?callback=GetMap&key=As6i5dVUMDhjdDSTrihY6jYbilGUYxwY86u3I3pvggpKL2Hrthexws_3h3dAyChN' async defer></script>
+
+
+<!-- javascript -->
+<script>
+//1．位置情報の取得に成功した時の処理
+
+function mapsInit(position) {
+    //lat=緯度、lon=経度 を取得
+    const lat = position.coords.latitude;
+    const lon = position.coords.longitude;
+    const map = new Microsoft.Maps.Map('#myMap', {
+            center: new Microsoft.Maps.Location(lat,lon), //Location center position
+            mapTypeId: Microsoft.Maps.MapTypeId.load, //Type: [load, aerial,canvasDark,canvasLight,birdseye,grayscale,streetside]
+            zoom: 14  //Zoom:1=zoomOut, 20=zoomUp[ 1~20 ]
+        });
+        //Get MAP Infomation
+        let center = map.getCenter();
+        console.log(center);
+
+        //Create custom Pushpin
+        let pin = new Microsoft.Maps.Pushpin(center, {
+            color: 'red',            //Color
+            // draggable:true,          //MouseDraggable
+            // enableClickedStyle:true, //Click
+            // enableHoverStyle:true,   //MouseOver
+            // visible:true             //show/hide
+            
+        });
+        //Add the pushpin to the map
+        map.entities.push(pin);
+
+        let infobox = new Microsoft.Maps.Infobox(center, {
+          title: '現在地',
+          description: '行きたい病院を探そう!',
+          showPointer: true,     //Pointer
+          visible:false,
+          
+        });
+        infobox.setMap(map); //Add infobox to Map
+        Microsoft.Maps.Events.addHandler(pin, 'mouseover', function () {
+          infobox.setOptions({ visible: true });
+        });
+        Microsoft.Maps.Events.addHandler(pin, 'mouseout', function () {
+          infobox.setOptions({ visible: false });
+        });
+        
+
+        document.getElementById("type").onchange = function(){
+        typeid = this.value; //selectboxの値を取得
+        if(typeid == "load") type = {mapTypeId: Microsoft.Maps.MapTypeId.load};
+        if(typeid == "aerial") type = {mapTypeId: Microsoft.Maps.MapTypeId.aerial};
+        if(typeid == "canvasDark") type = {mapTypeId: Microsoft.Maps.MapTypeId.canvasDark};
+        if(typeid == "canvasLight") type = {mapTypeId: Microsoft.Maps.MapTypeId.canvasLight};
+        if(typeid == "birdseye") type = {mapTypeId: Microsoft.Maps.MapTypeId.birdseye};
+        if(typeid == "grayscale") type = {mapTypeId: Microsoft.Maps.MapTypeId.grayscale};
+        if(typeid == "streetside") type = {mapTypeId: Microsoft.Maps.MapTypeId.streetside};
+        //add type
+        map.setView(type);
+        }
+
+        
+        //Event:ColorChange
+        function highlight(id) {
+        //Highlight the div to indicate that the event has fired.
+        document.getElementById(id).style.background = 'LightGreen';
+        //Remove the highlighting after a second.
+        setTimeout(function () { document.getElementById(id).style.background = 'white'; }, 1000);
+    }
+
+    //Event:mouseover
+    Microsoft.Maps.Events.addHandler(pin, 'mouseover', function (e) {
+        e.target.setOptions({color: 'red'});
+    });
+    //Event:mouseout
+    Microsoft.Maps.Events.addHandler(pin, 'mouseout', function (e) {
+        e.target.setOptions({color: 'blue'});
+    });
+
+    var markerData = [
+      {
+        name: '北海道大学 動物医療センター',
+        address: '〒060-0818 北海道札幌市北区北１９条西１０丁目'
+      },{
+        name: 'どうぶつ眼科VECS',
+        address: '〒001-0013 北海道札幌市北区北１３条西１丁目１−８ ',
+      },{
+        name: '北光犬猫病院',
+        address: '〒065-0014 北海道札幌市東区北１４条東２丁目２−１５',
+      },{
+        name: '中の道動物病院',
+        address: '〒065-0017 北海道札幌市東区北１７条東７丁目２−２２',
+      },{
+        name: '北愛動物病院 札幌院',
+        address: '〒065-0012 北海道札幌市東区東区北１２条東１３丁目２−１０',
+      },{
+        name: 'アテナ動物病院アリオ札幌',
+        address: '〒065-8518 北海道札幌市東区北７条東９丁目２−２０ イトーヨーカドーアリオ札幌１階',
+      },{
+        name: 'あつき動物病院',
+        address: '〒065-0021 北海道札幌市東区北２１条東１０丁目２−８',
+      },{
+        name: 'アニマルクリニック永山公園',
+        address: '〒060-0032 北海道札幌市中央区北２条東７丁目８２−８２ ',
+      }];
+
+  
+    Microsoft.Maps.loadModule('Microsoft.Maps.Search', function () {
+    var searchManager = new Microsoft.Maps.Search.SearchManager(map);
+    var requestOptions = {
+        bounds: map.getBounds(),
+        where: markerData[0].address,
+        callback: function (answer, userData) {
+          let pin0 = new Microsoft.Maps.Pushpin(answer.results[0].location)
+            map.entities.push(pin0);
+          // infobox
+          let infobox = new Microsoft.Maps.Infobox(answer.results[0].location, {
+            title: markerData[0].name,
+            description: markerData[0].address,
+            showPointer: true,     //Pointer
+            visible:false,
+            //Event:Create
+            actions: [{
+              label: 'ホームページへ',
+              eventHandler: function () { //function
+                window.location = 'https://www.vetmed.hokudai.ac.jp/VMTH/'
+              }
+            }],
+          });
+          infobox.setMap(map); //Add infobox to Map
+          Microsoft.Maps.Events.addHandler(pin0, 'mouseover', function () {
+            infobox.setOptions({ visible: true });
+          });
+          Microsoft.Maps.Events.addHandler(pin0, 'mouseout', function () {
+            infobox.setOptions({ visible: false });
+          });
+        }
+    };
+    searchManager.geocode(requestOptions);
+  });
+
+  Microsoft.Maps.loadModule('Microsoft.Maps.Search', function () {
+    var searchManager = new Microsoft.Maps.Search.SearchManager(map);
+    var requestOptions = {
+        bounds: map.getBounds(),
+        where: markerData[1].address,
+        callback: function (answer, userData) {
+          let pin1 = new Microsoft.Maps.Pushpin(answer.results[0].location)
+            map.entities.push(pin1);
+          // infobox
+          let infobox = new Microsoft.Maps.Infobox(answer.results[0].location, {
+            title: markerData[1].name,
+            description: markerData[1].address,
+            showPointer: true,     //Pointer
+            visible:false,
+            //Event:Create
+            actions: [{
+              label: 'ホームページへ',
+              eventHandler: function () { //function
+                window.location = 'http://www.doubutuganka-vecs.com/'
+              }
+            }],
+          });
+          infobox.setMap(map); //Add infobox to Map
+          Microsoft.Maps.Events.addHandler(pin1, 'mouseover', function () {
+            infobox.setOptions({ visible: true });
+          });
+          Microsoft.Maps.Events.addHandler(pin1, 'mouseout', function () {
+            infobox.setOptions({ visible: false });
+          });
+        }
+    };
+    searchManager.geocode(requestOptions);
+  });
+
+  Microsoft.Maps.loadModule('Microsoft.Maps.Search', function () {
+    var searchManager = new Microsoft.Maps.Search.SearchManager(map);
+    var requestOptions = {
+        bounds: map.getBounds(),
+        where: markerData[2].address,
+        callback: function (answer, userData) {
+          let pin2 = new Microsoft.Maps.Pushpin(answer.results[0].location)
+            map.entities.push(pin2);
+          // infobox
+          let infobox = new Microsoft.Maps.Infobox(answer.results[0].location, {
+            title: markerData[2].name,
+            description: markerData[2].address,
+            showPointer: true,     //Pointer
+            visible:false,
+            //Event:Create
+            actions: [{
+              label: 'ホームページへ',
+              eventHandler: function () { //function
+                window.location = 'http://www.hokkou-ac.jp/'
+              }
+            }],
+          });
+          infobox.setMap(map); //Add infobox to Map
+          Microsoft.Maps.Events.addHandler(pin2, 'mouseover', function () {
+            infobox.setOptions({ visible: true });
+          });
+          Microsoft.Maps.Events.addHandler(pin2, 'mouseout', function () {
+            infobox.setOptions({ visible: false });
+          });
+        }
+    };
+    searchManager.geocode(requestOptions);
+  });
+
+  Microsoft.Maps.loadModule('Microsoft.Maps.Search', function () {
+    var searchManager = new Microsoft.Maps.Search.SearchManager(map);
+    var requestOptions = {
+        bounds: map.getBounds(),
+        where: markerData[3].address,
+        callback: function (answer, userData) {
+          let pin3 = new Microsoft.Maps.Pushpin(answer.results[0].location)
+            map.entities.push(pin3);
+          // infobox
+          let infobox = new Microsoft.Maps.Infobox(answer.results[0].location, {
+            title: markerData[3].name,
+            description: markerData[3].address,
+            showPointer: true,     //Pointer
+            visible:false,
+            //Event:Create
+            actions: [{
+              label: 'ホームページへ',
+              eventHandler: function () { //function
+                window.location = 'http://www.nakanomichi-ach.com/'
+              }
+            }],
+          });
+          infobox.setMap(map); //Add infobox to Map
+          Microsoft.Maps.Events.addHandler(pin3, 'mouseover', function () {
+            infobox.setOptions({ visible: true });
+          });
+          Microsoft.Maps.Events.addHandler(pin3, 'mouseout', function () {
+            infobox.setOptions({ visible: false });
+          });
+        }
+    };
+    searchManager.geocode(requestOptions);
+  });
+
+  Microsoft.Maps.loadModule('Microsoft.Maps.Search', function () {
+    var searchManager = new Microsoft.Maps.Search.SearchManager(map);
+    var requestOptions = {
+        bounds: map.getBounds(),
+        where: markerData[4].address,
+        callback: function (answer, userData) {
+          let pin4 = new Microsoft.Maps.Pushpin(answer.results[0].location)
+            map.entities.push(pin4);
+          // infobox
+          let infobox = new Microsoft.Maps.Infobox(answer.results[0].location, {
+            title: markerData[4].name,
+            description: markerData[4].address,
+            showPointer: true,     //Pointer
+            visible:false,
+            //Event:Create
+            actions: [{
+              label: 'ホームページへ',
+              eventHandler: function () { //function
+                window.location = 'http://www.vets-labo.com/'
+              }
+            }],
+          });
+          infobox.setMap(map); //Add infobox to Map
+          Microsoft.Maps.Events.addHandler(pin4, 'mouseover', function () {
+            infobox.setOptions({ visible: true });
+          });
+          Microsoft.Maps.Events.addHandler(pin4, 'mouseout', function () {
+            infobox.setOptions({ visible: false });
+          });
+        }
+    };
+    searchManager.geocode(requestOptions);
+  });
+
+  Microsoft.Maps.loadModule('Microsoft.Maps.Search', function () {
+    var searchManager = new Microsoft.Maps.Search.SearchManager(map);
+    var requestOptions = {
+        bounds: map.getBounds(),
+        where: markerData[5].address,
+        callback: function (answer, userData) {
+          let pin5 = new Microsoft.Maps.Pushpin(answer.results[0].location)
+            map.entities.push(pin5);
+          // infobox
+          let infobox = new Microsoft.Maps.Infobox(answer.results[0].location, {
+            title: markerData[5].name,
+            description: markerData[5].address,
+            showPointer: true,     //Pointer
+            visible:false,
+            //Event:Create
+            actions: [{
+              label: 'ホームページへ',
+              eventHandler: function () { //function
+                window.location = 'https://ah.aeonpet.com/hospitals/ariosapporo/'
+              }
+            }],
+          });
+          infobox.setMap(map); //Add infobox to Map
+          Microsoft.Maps.Events.addHandler(pin5, 'mouseover', function () {
+            infobox.setOptions({ visible: true });
+          });
+          Microsoft.Maps.Events.addHandler(pin5, 'mouseout', function () {
+            infobox.setOptions({ visible: false });
+          });
+        }
+    };
+    searchManager.geocode(requestOptions);
+  });
+  
+  Microsoft.Maps.loadModule('Microsoft.Maps.Search', function () {
+    var searchManager = new Microsoft.Maps.Search.SearchManager(map);
+    var requestOptions = {
+        bounds: map.getBounds(),
+        where: markerData[6].address,
+        callback: function (answer, userData) {
+          let pin6 = new Microsoft.Maps.Pushpin(answer.results[0].location)
+            map.entities.push(pin6);
+          // infobox
+          let infobox = new Microsoft.Maps.Infobox(answer.results[0].location, {
+            title: markerData[6].name,
+            description: markerData[6].address,
+            showPointer: true,     //Pointer
+            visible:false,
+            //Event:Create
+            actions: [{
+              label: 'ホームページへ',
+              eventHandler: function () { //function
+                window.location = 'https://atsuki-ac.com/'
+              }
+            }],
+          });
+          infobox.setMap(map); //Add infobox to Map
+          Microsoft.Maps.Events.addHandler(pin6, 'mouseover', function () {
+            infobox.setOptions({ visible: true });
+          });
+          Microsoft.Maps.Events.addHandler(pin6, 'mouseout', function () {
+            infobox.setOptions({ visible: false });
+          });
+        }
+    };
+    searchManager.geocode(requestOptions);
+  });
+  
+  Microsoft.Maps.loadModule('Microsoft.Maps.Search', function () {
+    var searchManager = new Microsoft.Maps.Search.SearchManager(map);
+    var requestOptions = {
+        bounds: map.getBounds(),
+        where: markerData[7].address,
+        callback: function (answer, userData) {
+          let pin7 = new Microsoft.Maps.Pushpin(answer.results[0].location)
+            map.entities.push(pin7);
+          // infobox
+          let infobox = new Microsoft.Maps.Infobox(answer.results[0].location, {
+            title: markerData[7].name,
+            description: markerData[7].address,
+            showPointer: true,     //Pointer
+            visible:false,
+            //Event:Create
+            actions: [{
+              label: 'ホームページへ',
+              eventHandler: function () { //function
+                window.location = 'http://www.animalclinic-nagayamakouen.com/'
+              }
+            }],
+          });
+          infobox.setMap(map); //Add infobox to Map
+          Microsoft.Maps.Events.addHandler(pin7, 'mouseover', function () {
+            infobox.setOptions({ visible: true });
+          });
+          Microsoft.Maps.Events.addHandler(pin7, 'mouseout', function () {
+            infobox.setOptions({ visible: false });
+          });
+        }
+    };
+    searchManager.geocode(requestOptions);
+  });
+  
+};
+
+
+
+//2． 位置情報の取得に失敗した場合の処理
+function mapsError(error) {
+    let e = "";
+  if (error.code == 1) { //1＝位置情報取得が許可されてない（ブラウザの設定）
+    e = "位置情報が許可されてません";
+    }
+  if (error.code == 2) { //2＝現在地を特定できない
+    e = "現在位置を特定できません";
+    }
+  if (error.code == 3) { //3＝位置情報を取得する前にタイムアウトになった場合
+    e = "位置情報を取得する前にタイムアウトになりました";
+    }
+    alert("エラー：" + e);
+};
+
+//3.位置情報取得オプション
+const set ={
+  enableHighAccuracy: true, //より高精度な位置を求める
+  maximumAge: 20000,        //最後の現在地情報取得が20秒以内であればその情報を再利用する設定
+  timeout: 10000            //10秒以内に現在地情報を取得できなければ、処理を終了
+};
+
+function GetMap(){
+//Main:位置情報を取得する処理 //getCurrentPosition :or: watchPosition
+navigator.geolocation.getCurrentPosition(mapsInit, mapsError, set);
+}
+
+
+
+
+
+//maykey AogutSh1sOysRpnd5uWS8pOweStRWQ7HNi0GG6okC
+</script>
+
+</body>
+</html>
